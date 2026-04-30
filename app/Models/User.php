@@ -2,33 +2,41 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\HasCompanyScope;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, Notifiable, SoftDeletes, HasCompanyScope;
 
+    protected $fillable = ['company_id', 'name', 'email', 'password', 'role', 'is_active'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $hidden = ['password', 'remember_token'];
+
+    protected $casts = [
+        'is_active'         => 'boolean',
+        'email_verified_at' => 'datetime',
+        'password'          => 'hashed',
+    ];
+
+    public function isSuperAdmin(): bool
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->role === 'super_admin';
+    }
+    public function isCompanyAdmin(): bool
+    {
+        return $this->role === 'company_admin';
+    }
+    public function isEmployee(): bool
+    {
+        return $this->role === 'employee';
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
     }
 }
