@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, SoftDeletes, HasCompanyScope;
+    use Notifiable, SoftDeletes, HasCompanyScope;
 
     protected $fillable = ['company_id', 'name', 'email', 'password', 'role', 'is_active'];
 
