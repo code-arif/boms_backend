@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+
+class PlaceOrderRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'order_session_id'            => ['required', 'integer', 'exists:order_sessions,id'],
+            'notes'                       => ['nullable', 'string', 'max:500'],
+            'items'                       => ['required', 'array', 'min:1'],
+            'items.*.menu_item_id'        => ['required', 'integer', 'exists:menu_items,id'],
+            'items.*.quantity'            => ['required', 'integer', 'min:1', 'max:20'],
+            'items.*.notes'               => ['nullable', 'string', 'max:300'],
+        ];
+    }
+}
