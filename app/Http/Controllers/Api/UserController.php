@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\CreateUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,6 +13,9 @@ class UserController extends Controller
 {
     public function __construct(private UserService $service) {}
 
+    /**
+     * Get all users
+     */
     public function index(Request $request): JsonResponse
     {
         $users = $this->service->list($request->user(), perPage: 15);

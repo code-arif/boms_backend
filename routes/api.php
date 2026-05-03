@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Route;
 // Health Check for the API
 Route::get('/health', function () {
     return response()->json([
-        'status'  => true,
+        'status' => true,
         'message' => 'BOMS API is running.',
-        'data'    => [
-            'version'   => '1.0.0',
+        'data' => [
+            'version' => '1.0.0',
             'timestamp' => now()->toIso8601String(),
         ],
     ]);
@@ -71,19 +71,47 @@ Route::prefix('v1')->group(function () {
 
         // ── Company Admin ──────────────────────────────────
         Route::middleware('role:company_admin')->group(function () {
-            // Manage own employees
-            Route::apiResource('users', UserController::class)->except('index')->names([
-                'store'   => 'users.store.admin',
-                'show'    => 'users.show.admin',
-                'update'  => 'users.update.admin',
-                'destroy' => 'users.destroy.admin',
-            ]);
-            Route::get('users', [UserController::class, 'index'])->name('users.index.admin');
-            Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive']);
+            Route::get('user/list', [UserController::class, 'index'])->name('users.index.admin'); // DONE: All user list of company admin
+            Route::post('user/store', [UserController::class, 'store'])->name('users.store.admin'); // DONE: Create new user
+            Route::get('user/{user}/view', [UserController::class, 'show'])->name('users.show.admin');
+            Route::post('user/{user}/update', [UserController::class, 'update'])->name('users.update.admin'); // DONE: Update user
 
-            // Teams
-            Route::apiResource('teams', TeamController::class);
-            Route::post('teams/{team}/assign-user', [TeamController::class, 'assignUser']);
+            // Optional: support PATCH update too
+            Route::patch('user/{user}', [UserController::class, 'update']);
+
+            // Delete user
+            Route::delete('user/{user}/delete', [UserController::class, 'destroy'])->name('users.destroy.admin');
+
+            // Toggle active/inactive
+            Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active.admin');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Teams Routes
+            |--------------------------------------------------------------------------
+            */
+
+            // Get all teams
+            Route::get('teams', [TeamController::class, 'index'])->name('teams.index');
+
+            // Store new team
+            Route::post('teams', [TeamController::class, 'store'])->name('teams.store');
+
+            // Show single team
+            Route::get('teams/{team}', [TeamController::class, 'show'])->name('teams.show');
+
+            // Update team
+            Route::put('teams/{team}', [TeamController::class, 'update'])->name('teams.update');
+
+            // Optional PATCH support
+            Route::patch('teams/{team}', [TeamController::class, 'update']);
+
+            // Delete team
+            Route::delete('teams/{team}', [TeamController::class, 'destroy'])->name('teams.destroy');
+
+            // Assign user to team
+            Route::post('teams/{team}/assign-user', [TeamController::class, 'assignUser'])->name('teams.assign-user');
         });
 
         // ── Company Admin ──────────────────────────────────────────
@@ -133,9 +161,9 @@ Route::prefix('v1')->group(function () {
             Route::get('order-sessions/active', [OrderSessionController::class, 'active']);
 
             // Place / manage own orders
-            Route::post('orders',                 [OrderController::class, 'store']);
-            Route::get('orders/my',              [OrderController::class, 'myOrders']);
-            Route::put('orders/{order}',         [OrderController::class, 'update']);
+            Route::post('orders', [OrderController::class, 'store']);
+            Route::get('orders/my', [OrderController::class, 'myOrders']);
+            Route::put('orders/{order}', [OrderController::class, 'update']);
             Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel']);
         });
     });
@@ -144,8 +172,8 @@ Route::prefix('v1')->group(function () {
 // Fallback route
 Route::fallback(function () {
     return response()->json([
-        'status'  => false,
+        'status' => false,
         'message' => 'API endpoint not found.',
-        'data'    => null,
+        'data' => null,
     ], 404);
 });

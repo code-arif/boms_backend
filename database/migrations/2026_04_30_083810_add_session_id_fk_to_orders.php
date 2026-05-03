@@ -8,6 +8,10 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
+            $table->dropIndex(['session_id']);
+        });
+
+        Schema::table('orders', function (Blueprint $table) {
             $table->dropColumn('session_id');
             $table->foreignId('order_session_id')
                 ->nullable()

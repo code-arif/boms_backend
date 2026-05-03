@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
+    /**
+     * Get all users
+     */
     public function list(User $authUser, int $perPage = 15): LengthAwarePaginator
     {
         return User::query()->when(
@@ -24,16 +27,16 @@ class UserService
         // Company admins can only create employees in their own company
         if ($authUser->isCompanyAdmin()) {
             $data['company_id'] = $authUser->company_id;
-            $data['role']       = 'employee';
+            $data['role'] = 'employee';
         }
 
         return User::create([
             'company_id' => $data['company_id'],
-            'name'       => $data['name'],
-            'email'      => $data['email'],
-            'password'   => Hash::make($data['password']),
-            'role'       => $data['role'] ?? 'employee',
-            'is_active'  => true,
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => $data['role'] ?? 'employee',
+            'is_active' => true,
         ]);
     }
 
