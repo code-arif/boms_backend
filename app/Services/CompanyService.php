@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Company;
+use App\Models\FeatureFlag;
 use App\Models\User;
 use App\Repositories\CompanyRepository;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +46,17 @@ class CompanyService
                 'role'       => 'company_admin',
                 'is_active'  => true,
             ]);
+
+            // Seed default feature flags
+            $defaultFlags = ['pwa', 'bulk_pay', 'analytics', 'audit_logs'];
+            foreach ($defaultFlags as $flag) {
+                FeatureFlag::create([
+                    'company_id'  => $company->id,
+                    'key'         => $flag,
+                    'enabled'     => true, // all on by default
+                    'description' => ucfirst(str_replace('_', ' ', $flag)) . ' feature',
+                ]);
+            }
 
             return compact('company', 'admin');
         });
