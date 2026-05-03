@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckFeatureFlag;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
@@ -15,8 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'role'   => RoleMiddleware::class,
-            'active' => EnsureUserIsActive::class,
+            'role'    => RoleMiddleware::class,
+            'active'  => EnsureUserIsActive::class,
+            'feature' => CheckFeatureFlag::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

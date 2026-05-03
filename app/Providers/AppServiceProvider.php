@@ -4,7 +4,11 @@ namespace App\Providers;
 
 use App\Repositories\CompanyRepository;
 use App\Repositories\Payment\PaymentRepository;
+use App\Services\Analytics\AnalyticsService;
+use App\Services\Audit\AuditLogService;
 use App\Services\CompanyService;
+use App\Services\FeatureFlagService;
+use App\Services\Impersonation\ImpersonationService;
 use App\Services\OrderService;
 use App\Services\OrderSessionService;
 use App\Services\Payment\PaymentService;
@@ -25,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrderService::class, OrderService::class);
         $this->app->bind(PaymentRepository::class, PaymentRepository::class);
         $this->app->bind(PaymentService::class, PaymentService::class);
+        $this->app->bind(AnalyticsService::class, AnalyticsService::class);
+        $this->app->bind(ImpersonationService::class, ImpersonationService::class);
+        $this->app->bind(FeatureFlagService::class, FeatureFlagService::class);
+        $this->app->bind(AuditLogService::class, AuditLogService::class);
     }
 
     /**

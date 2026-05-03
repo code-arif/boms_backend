@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\MenuItemController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderSessionController;
 use App\Http\Controllers\Api\Payment\PaymentController;
+use App\Http\Controllers\Api\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
@@ -33,6 +34,30 @@ Route::prefix('v1')->group(function () {
             Route::apiResource('users', UserController::class);
         });
 
+        Route::middleware(['auth:sanctum', 'active', 'role:super_admin'])
+            ->prefix('v1/admin')
+            ->group(function () {
+
+                // ── Analytics ──────────────────────────────────────
+                Route::get('overview', [SuperAdminController::class, 'overview']);
+                Route::get('analytics/companies', [SuperAdminController::class, 'companyBreakdown']);
+                Route::get('analytics/revenue-trend', [SuperAdminController::class, 'revenueTrend']);
+                Route::get('analytics/top-menu-items', [SuperAdminController::class, 'topMenuItems']);
+
+                // ── Impersonation ───────────────────────────────────
+                Route::post('impersonate/{user}', [SuperAdminController::class, 'impersonate']);
+                Route::delete('impersonate', [SuperAdminController::class, 'leaveImpersonation']);
+
+                // ── Feature Flags ───────────────────────────────────
+                Route::get('companies/{company}/flags', [SuperAdminController::class, 'featureFlags']);
+                Route::patch('companies/{company}/flags/{key}', [SuperAdminController::class, 'toggleFlag']);
+                Route::put('companies/{company}/flags', [SuperAdminController::class, 'bulkUpdateFlags']);
+
+                // ── Audit Logs ──────────────────────────────────────
+                Route::get('audit-logs', [SuperAdminController::class, 'auditLogs']);
+                Route::get('audit-logs/recent', [SuperAdminController::class, 'recentActions']);
+            });
+
         // ── Company Admin ──────────────────────────────────
         Route::middleware('role:company_admin')->group(function () {
             // Manage own employees
@@ -55,15 +80,12 @@ Route::prefix('v1')->group(function () {
 
             // Menu items
             Route::apiResource('menu-items', MenuItemController::class);
-            Route::patch(
-                'menu-items/{menuItem}/toggle-availability',
-                [MenuItemController::class, 'toggleAvailability']
-            );
+            Route::patch('menu-items/{menuItem}/toggle-availability', [MenuItemController::class, 'toggleAvailability']);
 
             // Order sessions
-            Route::get('order-sessions',            [OrderSessionController::class, 'index']);
-            Route::post('order-sessions',           [OrderSessionController::class, 'open']);
-            Route::get('order-sessions/{id}',       [OrderSessionController::class, 'show']);
+            Route::get('order-sessions', [OrderSessionController::class, 'index']);
+            Route::post('order-sessions', [OrderSessionController::class, 'open']);
+            Route::get('order-sessions/{id}', [OrderSessionController::class, 'show']);
             Route::patch('order-sessions/{id}/close', [OrderSessionController::class, 'close']);
 
             // Admin order management
@@ -71,22 +93,22 @@ Route::prefix('v1')->group(function () {
             Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
 
             // Single order payment
-            Route::post('payments',                           [PaymentController::class, 'store']);
+            Route::post('payments', [PaymentController::class, 'store']);
 
             // Bulk pay all unpaid orders in a session
             Route::post('order-sessions/{session}/bulk-pay', [PaymentController::class, 'bulkRecord']);
 
             // Refund
-            Route::patch('payments/{payment}/refund',         [PaymentController::class, 'refund']);
+            Route::patch('payments/{payment}/refund', [PaymentController::class, 'refund']);
 
             // Session financial summary
-            Route::get('order-sessions/{session}/summary',   [PaymentController::class, 'sessionSummary']);
+            Route::get('order-sessions/{session}/summary', [PaymentController::class, 'sessionSummary']);
 
             // Payments for a specific order
-            Route::get('orders/{order}/payments',            [PaymentController::class, 'forOrder']);
+            Route::get('orders/{order}/payments', [PaymentController::class, 'forOrder']);
 
             // Company-wide payment history
-            Route::get('payments/history',                   [PaymentController::class, 'history']);
+            Route::get('payments/history', [PaymentController::class, 'history'])->middleware('feature:analytics');
         });
 
         // ── Employee + above ───────────────────────────────────────
