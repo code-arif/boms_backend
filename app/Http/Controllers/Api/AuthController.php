@@ -12,6 +12,9 @@ class AuthController extends Controller
 {
     public function __construct(private AuthService $authService) {}
 
+    /**
+     * User Login: super admin, company admin, employee
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login($request->validated());
@@ -31,6 +34,9 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * User Logout: super admin, company admin, employee
+     */
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
@@ -42,6 +48,9 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Get Authenticated User: super admin, company admin, employee
+     */
     public function me(Request $request): JsonResponse
     {
         return response()->json([

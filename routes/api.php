@@ -9,20 +9,31 @@ use App\Http\Controllers\Api\Payment\PaymentController;
 use App\Http\Controllers\Api\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Health Check for the API
+Route::get('/health', function () {
+    return response()->json([
+        'status'  => true,
+        'message' => 'BOMS API is running.',
+        'data'    => [
+            'version'   => '1.0.0',
+            'timestamp' => now()->toIso8601String(),
+        ],
+    ]);
+});
 
+// V1 Routes
 Route::prefix('v1')->group(function () {
 
     // Public routes
-    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/login', [AuthController::class, 'login']); // DONE: company admin, employee, super admin login
 
     // Protected routes
     Route::middleware(['auth:sanctum', 'active'])->group(function () {
 
-        Route::post('/auth/logout', [AuthController::class, 'logout']);
-        Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::post('/auth/logout', [AuthController::class, 'logout']); // DONE: company admin, employee, super admin logout
+        Route::get('/auth/me', [AuthController::class, 'me']); // DONE: company admin, employee, super admin get authenticated user
 
         // Super Admin only
         Route::middleware('role:super_admin')->prefix('admin')->group(function () {
@@ -68,11 +79,11 @@ Route::prefix('v1')->group(function () {
                 'destroy' => 'users.destroy.admin',
             ]);
             Route::get('users', [UserController::class, 'index'])->name('users.index.admin');
-            Route::patch('users/{user}/toggle-active',    [UserController::class, 'toggleActive']);
+            Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive']);
 
             // Teams
             Route::apiResource('teams', TeamController::class);
-            Route::post('teams/{team}/assign-user',       [TeamController::class, 'assignUser']);
+            Route::post('teams/{team}/assign-user', [TeamController::class, 'assignUser']);
         });
 
         // ── Company Admin ──────────────────────────────────────────
@@ -128,4 +139,13 @@ Route::prefix('v1')->group(function () {
             Route::patch('orders/{order}/cancel', [OrderController::class, 'cancel']);
         });
     });
+});
+
+// Fallback route
+Route::fallback(function () {
+    return response()->json([
+        'status'  => false,
+        'message' => 'API endpoint not found.',
+        'data'    => null,
+    ], 404);
 });
