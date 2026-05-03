@@ -10,9 +10,9 @@ class UserService
 {
     public function list(User $authUser, int $perPage = 15): LengthAwarePaginator
     {
-        return User::when(
+        return User::query()->when(
             !$authUser->isSuperAdmin(),
-            fn($q) => $q->where('company_id', $authUser->company_id)
+            fn($q) => $q->where('company_id', '=', $authUser->company_id)
                 ->where('role', '!=', 'super_admin')
         )
             ->latest()
