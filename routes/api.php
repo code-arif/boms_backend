@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\MenuItemController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderSessionController;
+use App\Http\Controllers\Api\Payment\PaymentController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
@@ -67,7 +68,25 @@ Route::prefix('v1')->group(function () {
 
             // Admin order management
             Route::get('order-sessions/{session}/orders', [OrderController::class, 'sessionOrders']);
-            Route::patch('orders/{order}/status',          [OrderController::class, 'updateStatus']);
+            Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
+
+            // Single order payment
+            Route::post('payments',                           [PaymentController::class, 'store']);
+
+            // Bulk pay all unpaid orders in a session
+            Route::post('order-sessions/{session}/bulk-pay', [PaymentController::class, 'bulkRecord']);
+
+            // Refund
+            Route::patch('payments/{payment}/refund',         [PaymentController::class, 'refund']);
+
+            // Session financial summary
+            Route::get('order-sessions/{session}/summary',   [PaymentController::class, 'sessionSummary']);
+
+            // Payments for a specific order
+            Route::get('orders/{order}/payments',            [PaymentController::class, 'forOrder']);
+
+            // Company-wide payment history
+            Route::get('payments/history',                   [PaymentController::class, 'history']);
         });
 
         // ── Employee + above ───────────────────────────────────────

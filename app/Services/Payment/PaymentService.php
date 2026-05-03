@@ -7,6 +7,7 @@ use App\Models\OrderSession;
 use App\Models\Payment;
 use App\Models\User;
 use App\Repositories\Payment\PaymentRepository;
+use App\Services\Audit\AuditService;
 use Illuminate\Support\Facades\DB;
 
 class PaymentService
@@ -47,6 +48,13 @@ class PaymentService
 
         // Auto-confirm the order upon payment
         $order->update(['status' => 'confirmed']);
+
+        // log audit service
+        AuditService::log('payment.recorded', $payment, [], [
+            'order_id' => $payment->order_id,
+            'amount'   => $payment->amount,
+            'method'   => $payment->method,
+        ]);
 
         return $payment->load('order.user:id,name', 'collector:id,name');
     }
@@ -114,6 +122,8 @@ class PaymentService
 
         // Revert order status to pending
         $payment->order()->update(['status' => 'pending']);
+
+        AuditService::log('payment.refunded', $payment, ['status' => 'completed'], ['status' => 'refunded']);
 
         return $payment->fresh('order.user:id,name');
     }
